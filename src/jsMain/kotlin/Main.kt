@@ -7,8 +7,8 @@ import org.jetbrains.compose.web.renderComposable
 import kotlin.random.Random
 
 fun main() {
-    val fieldSize = 12
-    val minesCount = 21
+    val fieldSize = 20
+    val minesCount = 46
     var realMinesCount = 0
     var checkingMode by mutableStateOf(true)
 
@@ -42,16 +42,19 @@ fun main() {
         }
     }
 
-    for (i in 0 until fieldSize) {
-        for (j in 0 until fieldSize) {
-            if (fieldBack[i][j] == 0) {
-                fieldFront[i][j] = " "
-            }else if (fieldBack[i][j] == 9) {
-                fieldFront[i][j] = "#"
-            }else {
-                fieldFront[i][j] = fieldBack[i][j].toString()
+    fun fieldReveal(x: Int, y: Int) {
+        for (i in 0 until fieldSize) {
+            for (j in 0 until fieldSize) {
+                if (fieldBack[i][j] == 0) {
+                    fieldFront[i][j] = " "
+                } else if (fieldBack[i][j] == 9) {
+                    fieldFront[i][j] = "#"
+                    if (x == i && y == j) { fieldFront[i][j] = "!#!" }
+                } else {
+                    fieldFront[i][j] = fieldBack[i][j].toString()
+                }
+                //fieldFront[i][j] = fieldBack[i][j].toString()
             }
-            //fieldFront[i][j] = fieldBack[i][j].toString()
         }
     }
 
@@ -97,6 +100,12 @@ fun main() {
                                 style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet) }
                                 onClick {
                                     console.log(i, j)
+                                    if (fieldBack[i][j] == 9) {
+                                        fieldReveal(i, j)
+                                    }else {
+                                        fieldFront[i][j] = fieldBack[i][j].toString()
+                                        if (fieldBack[i][j] == 0) { fieldFront[i][j] = " " }
+                                    }
                                 }
                             }){
                                 //Text(i.toString() + "\n" + j.toString())
