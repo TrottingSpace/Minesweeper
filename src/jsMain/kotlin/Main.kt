@@ -8,7 +8,8 @@ import kotlin.random.Random
 
 fun main() {
     val fieldSize = 12
-    val minesCount = 7
+    val minesCount = 21
+    var realMinesCount = 0
     var checkingMode by mutableStateOf(true)
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
@@ -16,11 +17,12 @@ fun main() {
 
     var whileCounter = minesCount
     while (whileCounter > 0) {
-        var randRow = Random.nextInt(fieldSize)
-        var randCol = Random.nextInt(fieldSize)
+        val randRow = Random.nextInt(fieldSize)
+        val randCol = Random.nextInt(fieldSize)
         if (fieldBack[randRow][randCol] == 0) {
             fieldBack[randRow][randCol] = 9
             whileCounter -= 1
+            realMinesCount += 1
         }
     }
 
@@ -42,12 +44,14 @@ fun main() {
 
     for (i in 0 until fieldSize) {
         for (j in 0 until fieldSize) {
-            /*
             if (fieldBack[i][j] == 0) {
-                fieldFront[i][j] = "."
+                fieldFront[i][j] = " "
+            }else if (fieldBack[i][j] == 9) {
+                fieldFront[i][j] = "#"
+            }else {
+                fieldFront[i][j] = fieldBack[i][j].toString()
             }
-            */
-            fieldFront[i][j] = fieldBack[i][j].toString()
+            //fieldFront[i][j] = fieldBack[i][j].toString()
         }
     }
 
@@ -55,7 +59,7 @@ fun main() {
     console.log(window.innerHeight, window.innerWidth, boxSize)
 
     renderComposable(rootElementId = "root") {
-        Text("$fieldSize $minesCount $checkingMode")
+        Text("$fieldSize $minesCount $checkingMode $realMinesCount")
         Div({ style { padding((boxSize / 4).px) } }) {
             Button( attrs = {
                 style { fontSize((boxSize * 0.5).px); width((boxSize * 2).px); height(boxSize.px); textAlign("center"); property("vertical-align", "center") }
