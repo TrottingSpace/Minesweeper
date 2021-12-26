@@ -10,16 +10,17 @@ import org.jetbrains.compose.web.renderComposable
 
 fun main() {
     val fieldSize: Int = 12
+    val minesCount: Int = 7
 
     val boxSize: Int = if (window.innerHeight < window.innerWidth){ (window.innerHeight / (fieldSize + 1)) } else { (window.innerWidth / (fieldSize + 1)) }
     console.log(window.innerHeight, window.innerWidth, boxSize)
 
     renderComposable(rootElementId = "root") {
-        Text(fieldSize.toString())
+        Text("$fieldSize $minesCount")
         Div({ style { padding((boxSize / 4).px) } }) {
             Table({
                 style {
-                    fontSize((boxSize * 0.45).px)
+                    fontSize((boxSize * 0.35).px)
                     border(1.px, LineStyle.Solid, Color.blueviolet)
                     textAlign("center")
                     property("vertical-align", "center")
