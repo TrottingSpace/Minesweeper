@@ -9,12 +9,15 @@ import kotlin.random.Random
 fun main() {
     val fieldSize = 20
     val minesCount = 46
-    var realMinesCount = 0
+    var minesCountCheck = 0
     var checkingMode by mutableStateOf(true)
+    var stillPlaying by mutableStateOf(true)
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
+    val fieldHidden: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { true }.toTypedArray()) }.toTypedArray())
     val fieldFront: MutableList<MutableList<String>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { "?" }.toTypedArray()) }.toTypedArray())
 
+    //mine placing
     var whileCounter = minesCount
     while (whileCounter > 0) {
         val randRow = Random.nextInt(fieldSize)
@@ -22,10 +25,11 @@ fun main() {
         if (fieldBack[randRow][randCol] == 0) {
             fieldBack[randRow][randCol] = 9
             whileCounter -= 1
-            realMinesCount += 1
+            minesCountCheck += 1
         }
     }
 
+    //mine counters
     for (i in 0 until fieldSize) {
         for (j in 0 until fieldSize) {
             if (fieldBack[i][j] != 9) {
@@ -42,34 +46,61 @@ fun main() {
         }
     }
 
+    //revealing everything - function
     fun fieldReveal(x: Int, y: Int) {
         for (i in 0 until fieldSize) {
             for (j in 0 until fieldSize) {
                 if (fieldBack[i][j] == 0) {
                     fieldFront[i][j] = " "
                 } else if (fieldBack[i][j] == 9) {
-                    fieldFront[i][j] = "#"
+                    if (fieldFront[i][j] == "( )") {
+                        fieldFront[i][j] = "(#)"
+                    }else {
+                        fieldFront[i][j] = "#"
+                    }
                     if (x == i && y == j) { fieldFront[i][j] = "!#!" }
                 } else {
                     fieldFront[i][j] = fieldBack[i][j].toString()
                 }
-                //fieldFront[i][j] = fieldBack[i][j].toString()
             }
         }
     }
 
+    //revealing connected - function
+    fun connectedReveal(x: Int, y: Int) {
+        for (i in 0 until fieldSize) {
+            for (j in 0 until fieldSize) {
+                if (fieldBack[i][j] == 0) {
+                    fieldFront[i][j] = " "
+                } else if (fieldBack[i][j] == 9) {
+                    if (fieldFront[i][j] == "( )") {
+                        fieldFront[i][j] = "(#)"
+                    }else {
+                        fieldFront[i][j] = "#"
+                    }
+                    if (x == i && y == j) { fieldFront[i][j] = "!#!" }
+                } else {
+                    fieldFront[i][j] = fieldBack[i][j].toString()
+                }
+            }
+        }
+    }
+
+    //calculating dimensions
     val boxSize: Int = if (window.innerHeight < window.innerWidth){ (window.innerHeight / (fieldSize + 1)) } else { (window.innerWidth / (fieldSize + 1)) }
     console.log(window.innerHeight, window.innerWidth, boxSize)
 
     renderComposable(rootElementId = "root") {
-        Text("$fieldSize $minesCount $checkingMode $realMinesCount")
+        Text("$fieldSize $minesCount $checkingMode $minesCountCheck")
         Div({ style { padding((boxSize / 4).px) } }) {
             Button( attrs = {
                 style { fontSize((boxSize * 0.5).px); width((boxSize * 2).px); height(boxSize.px); textAlign("center"); property("vertical-align", "center") }
                 if (checkingMode) { disabled() }
-                onClick {
-                    checkingMode = true
-                    console.log(checkingMode)
+                if (stillPlaying) {
+                    onClick {
+                        checkingMode = true
+                        console.log(checkingMode)
+                    }//onClick-end
                 }
             } ){
                 Text("Reveal")
@@ -77,13 +108,16 @@ fun main() {
             Button( attrs = {
                 style { fontSize((boxSize * 0.5).px); width((boxSize * 2).px); height(boxSize.px); textAlign("center"); property("vertical-align", "center") }
                 if (!checkingMode) { disabled() }
-                onClick {
-                    checkingMode = false
-                    console.log(checkingMode)
+                if (stillPlaying) {
+                    onClick {
+                        checkingMode = false
+                        console.log(checkingMode)
+                    }//onClick-end
                 }
             } ){
                 Text("Mark")
             }//Button-end
+            Span ({style { fontSize((boxSize * 0.5).px) }}){ Text(if (checkingMode) { " Revealing " }else { " Marking " }.toString()) }
             Table({
                 style {
                     fontSize((boxSize * 0.35).px)
@@ -98,14 +132,25 @@ fun main() {
                         for (j in 0 until fieldSize) {
                             Td ({
                                 style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet) }
-                                onClick {
-                                    console.log(i, j)
-                                    if (fieldBack[i][j] == 9) {
-                                        fieldReveal(i, j)
-                                    }else {
-                                        fieldFront[i][j] = fieldBack[i][j].toString()
-                                        if (fieldBack[i][j] == 0) { fieldFront[i][j] = " " }
-                                    }
+                                if (stillPlaying) {
+                                    onClick {
+                                        console.log("click", i, j)
+                                        if (checkingMode) {
+                                            if (fieldBack[i][j] == 9) {
+                                                fieldReveal(i, j)
+                                                stillPlaying = false
+                                            } else {
+                                                fieldFront[i][j] = fieldBack[i][j].toString()
+                                                if (fieldBack[i][j] == 0) {
+                                                    fieldFront[i][j] = " "
+                                                }
+                                            }
+                                        } else if (fieldFront[i][j] != " ") {
+                                            fieldFront[i][j] = "( )"
+                                        } else if (fieldFront[i][j] == "( )") {
+                                            fieldFront[i][j] = " "
+                                        }
+                                    }//onClick-end
                                 }
                             }){
                                 //Text(i.toString() + "\n" + j.toString())
