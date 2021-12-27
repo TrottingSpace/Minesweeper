@@ -14,7 +14,6 @@ fun main() {
     var stillPlaying by mutableStateOf(true)
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
-    val fieldHidden: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { true }.toTypedArray()) }.toTypedArray())
     val fieldFront: MutableList<MutableList<String>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { "?" }.toTypedArray()) }.toTypedArray())
 
     //mine placing
@@ -48,26 +47,6 @@ fun main() {
 
     //revealing everything - function
     fun fieldReveal(x: Int, y: Int) {
-        for (i in 0 until fieldSize) {
-            for (j in 0 until fieldSize) {
-                if (fieldBack[i][j] == 0) {
-                    fieldFront[i][j] = " "
-                } else if (fieldBack[i][j] == 9) {
-                    if (fieldFront[i][j] == "( )") {
-                        fieldFront[i][j] = "(#)"
-                    }else {
-                        fieldFront[i][j] = "#"
-                    }
-                    if (x == i && y == j) { fieldFront[i][j] = "!#!" }
-                } else {
-                    fieldFront[i][j] = fieldBack[i][j].toString()
-                }
-            }
-        }
-    }
-
-    //revealing connected - function
-    fun connectedReveal(x: Int, y: Int) {
         for (i in 0 until fieldSize) {
             for (j in 0 until fieldSize) {
                 if (fieldBack[i][j] == 0) {
