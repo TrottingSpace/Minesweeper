@@ -9,14 +9,18 @@ import kotlin.random.Random
 fun main() {
     val fieldSize = 20
     val minesCount = 46
-    var minesCountCheck = 0
+    var minesCountCheck = 0//control variable
     var checkingMode by mutableStateOf(true)
     var stillPlaying by mutableStateOf(true)
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
+    val fieldHidden: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { true }.toTypedArray()) }.toTypedArray())
     val fieldFront: MutableList<MutableList<String>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { "?" }.toTypedArray()) }.toTypedArray())
+    val fieldMarked: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { false }.toTypedArray()) }.toTypedArray())
+    val fieldConnected: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
 
     //mine placing
+    console.log("@ placing mines")
     var whileCounter = minesCount
     while (whileCounter > 0) {
         val randRow = Random.nextInt(fieldSize)
@@ -27,8 +31,10 @@ fun main() {
             minesCountCheck += 1
         }
     }
+    console.log("@ mines placed", minesCountCheck)
 
     //mine counters
+    console.log("@ counting mines")
     for (i in 0 until fieldSize) {
         for (j in 0 until fieldSize) {
             if (fieldBack[i][j] != 9) {
@@ -44,6 +50,26 @@ fun main() {
             }
         }
     }
+    console.log("@ mines counted")
+
+    //mapping background values to front visuals TODO fix
+    fun mapFront() {
+        if (stillPlaying) {
+            for (i in 0 until fieldSize) {
+                for (j in 0 until fieldSize) {
+                    if (fieldMarked[i][j]) {
+                        fieldFront[i][j] = "🚩"
+                    } else if (fieldHidden[i][j]) {
+                        fieldFront[i][j] = "?"
+                    } else if (fieldBack[i][j] == 0) {
+                        fieldFront[i][j] = " "
+                    } else {
+                        fieldFront[i][j] = fieldBack[i][j].toString()
+                    }
+                }
+            }
+        }
+    }
 
     //revealing everything - function
     fun fieldReveal(x: Int, y: Int) {
@@ -52,15 +78,33 @@ fun main() {
                 if (fieldBack[i][j] == 0) {
                     fieldFront[i][j] = " "
                 } else if (fieldBack[i][j] == 9) {
-                    if (fieldFront[i][j] == "( )") {
-                        fieldFront[i][j] = "(#)"
-                    }else {
-                        fieldFront[i][j] = "#"
-                    }
-                    if (x == i && y == j) { fieldFront[i][j] = "!#!" }
+                    fieldFront[i][j] = "💣"
+                    if (fieldMarked[i][j]) { fieldFront[i][j] = "🚩" }
+                    if (x == i && y == j) { fieldFront[i][j] = "💥" }
                 } else {
                     fieldFront[i][j] = fieldBack[i][j].toString()
                 }
+            }
+        }
+    }
+
+    //revealing connected - function
+    fun connectedReveal(x: Int, y: Int) {
+        if (fieldBack[x][y] == 0) {
+            for (k in (x-1)..(x+1)) {
+                for (l in (y-1)..(y+1)) {
+                    if ((0 until fieldSize).contains(k) && (0 until fieldSize).contains(l)) {
+                        fieldConnected[x][y] = 2
+                        if (fieldBack[k][l] == 0 && fieldConnected[k][l] == 0) { fieldConnected[k][l] = 1 }
+                        fieldHidden[k][l] = false
+                        fieldFront[k][l] = fieldBack[k][l].toString()//TODO temporary
+                    }
+                }
+            }
+        }
+        for (i in 0 until fieldSize) {
+            for (j in 0 until fieldSize) {
+                if (fieldConnected[i][j] == 1) { connectedReveal(i, j) }
             }
         }
     }
@@ -111,28 +155,29 @@ fun main() {
                         for (j in 0 until fieldSize) {
                             Td ({
                                 style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet) }
-                                if (stillPlaying) {
+                                if (stillPlaying && fieldHidden[i][j]) {
                                     onClick {
                                         console.log("click", i, j)
+                                        console.log("\t found", fieldBack[i][j])
                                         if (checkingMode) {
-                                            if (fieldBack[i][j] == 9) {
+                                            if (fieldMarked[i][j]) {
+                                                console.log("field $i $j is marked")
+                                            } else if (fieldBack[i][j] == 9) {
                                                 fieldReveal(i, j)
                                                 stillPlaying = false
-                                            } else {
-                                                fieldFront[i][j] = fieldBack[i][j].toString()
-                                                if (fieldBack[i][j] == 0) {
-                                                    fieldFront[i][j] = " "
-                                                }
+                                            } else if (fieldBack[i][j] == 0) {
+                                                connectedReveal(i, j)
                                             }
-                                        } else if (fieldFront[i][j] != " ") {
-                                            fieldFront[i][j] = "( )"
-                                        } else if (fieldFront[i][j] == "( )") {
-                                            fieldFront[i][j] = " "
+                                        } else if (fieldHidden[i][j]) {
+                                            console.log(i, j, "was marked", fieldMarked[i][j])
+                                            fieldMarked[i][j] = !fieldMarked[i][j]
+                                            console.log(i, j, "is marked", fieldMarked[i][j])
                                         }
                                     }//onClick-end
                                 }
                             }){
-                                //Text(i.toString() + "\n" + j.toString())
+                                //mapFront()//TODO broken function
+                                if (fieldFront[i][j] == "0") { fieldFront[i][j] = " " }//TODO temporary
                                 Text(fieldFront[i][j])
                             }//Td-end
                         }
