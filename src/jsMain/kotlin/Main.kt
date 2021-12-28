@@ -1,6 +1,6 @@
 import androidx.compose.runtime.*
 import kotlinx.browser.window
-import org.jetbrains.compose.web.attributes.*
+//import org.jetbrains.compose.web.attributes.*
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.jetbrains.compose.web.renderComposable
@@ -111,32 +111,6 @@ fun main() {
         //Text("$fieldSize $minesCount $checkingMode $minesCountCheck")
 
         Div({ style { padding(1.px) } }) {
-            Button( attrs = {
-                style { fontSize((boxSize * 0.5).px); width((boxSize * 2).px); height(boxSize.px); textAlign("center"); property("vertical-align", "center") }
-                if (checkingMode) { disabled() }
-                if (stillPlaying) {
-                    onClick {
-                        checkingMode = true
-                        console.log("Checking mode:", checkingMode)
-                    }//onClick-end
-                }
-            } ){
-                Text("Reveal")
-            }//Button-end
-            Button( attrs = {
-                style { fontSize((boxSize * 0.5).px); width((boxSize * 2).px); height(boxSize.px); textAlign("center"); property("vertical-align", "center") }
-                if (!checkingMode) { disabled() }
-                if (stillPlaying) {
-                    onClick {
-                        checkingMode = false
-                        console.log("Checking mode:", checkingMode)
-                    }//onClick-end
-                }
-            } ){
-                Text("Mark")
-            }//Button-end
-
-            Span ({style { fontSize((boxSize * 0.5).px) }}){ Text(if (checkingMode) { " Revealing " }else { " Marking " }.toString()) }
 
             console.log("\t Win counter:", winCounter)
             if (winCounter >= (fieldSize * fieldSize)) {
@@ -147,18 +121,101 @@ fun main() {
 
             Table({
                 style {
-                    fontSize((boxSize * 0.35).px)
-                    border(1.px, LineStyle.Solid, Color.blueviolet)
+                    fontSize((boxSize * 0.45).px)
+                    border(1.px, LineStyle.Solid, Color.black)
                     textAlign("center")
                     property("vertical-align", "center")
                     property("table-layout", "fixed")
+                    property("border-spacing", "0px")
+                    width(((fieldSize * boxSize) + 2).px)
+                    height((boxSize + 2).px)
+                    margin(0.px)
+                    padding(0.px)
+                }
+            }) {
+                Tr({ style { height(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                    Td({ style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                        Text(if (checkingMode) { "🔍" }else { "🚩" }.toString())
+                    }//Td-end
+                    Td({
+                        style { width((boxSize * 2.5).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px); textDecoration(if (checkingMode) { "underline" }else { "none" }.toString()) }
+                        if (stillPlaying && !checkingMode) {
+                            onClick {
+                                checkingMode = true
+                                console.log("Checking mode:", checkingMode)
+                            }//onClick-end
+                        }
+                    }) {
+                        Text("Reveal 🔍")
+                    }//Td-end
+                    Td({
+                        style { width((boxSize * 2.5).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px); textDecoration(if (checkingMode) { "none" }else { "underline" }.toString()) }
+                        if (stillPlaying && checkingMode) {
+                            onClick {
+                                checkingMode = false
+                                console.log("Checking mode:", checkingMode)
+                            }//onClick-end
+                        }
+                    }) {
+                        Text("Mark 🚩")
+                    }//Td-end
+                    Td({ style { /*width(boxSize.px); */margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                        Text("*")
+                    }//Td-end
+                    /*
+                    Td({
+                        style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                        if (stillPlaying && checkingMode) {
+                            onClick {
+                                //
+                            }//onClick-end
+                        }
+                    }) {
+                        Text("➖")
+                    }//Td-end
+                    Td({
+                        style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                        if (stillPlaying && checkingMode) {
+                            onClick {
+                                //
+                            }//onClick-end
+                        }
+                    }) {
+                        Text("0️⃣")
+                    }//Td-end
+                    Td({
+                        style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                        if (stillPlaying && checkingMode) {
+                            onClick {
+                                //
+                            }//onClick-end
+                        }
+                    }) {
+                        Text("➕")
+                    }//Td-end
+                    */
+                }
+            }
+
+            Table({
+                style {
+                    fontSize((boxSize * 0.45).px)
+                    border(1.px, LineStyle.Solid, Color.black)
+                    textAlign("center")
+                    property("vertical-align", "center")
+                    property("table-layout", "fixed")
+                    property("border-spacing", "0px")
+                    width(((fieldSize * boxSize) + 2).px)
+                    height(((fieldSize * boxSize) + 2).px)
+                    margin(0.px)
+                    padding(0.px)
                 }
             }) {
                 for (i in 0 until fieldSize) {
-                    Tr ({ style { height(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet); padding(0.px) } }){
+                    Tr ({ style { height(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }){
                         for (j in 0 until fieldSize) {
                             Td ({
-                                style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet); padding(0.px) }
+                                style { /*width(boxSize.px); */margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
                                 if (stillPlaying && fieldVisibility[i][j] == 0) {
                                     onClick {
                                         console.log("Clicked:", i, j, /*"\t\t Found:", fieldBack[i][j],*/ "\t\t Win counter:", winCounter)
