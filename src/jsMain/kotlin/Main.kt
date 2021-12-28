@@ -12,6 +12,7 @@ fun main() {
     var minesCountCheck = 0//control variable
     var checkingMode by mutableStateOf(true)
     var stillPlaying by mutableStateOf(true)
+    var winCounter by mutableStateOf(0)
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
     val fieldVisibility: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
@@ -29,6 +30,7 @@ fun main() {
             fieldBack[randRow][randCol] = 9
             whileCounter -= 1
             minesCountCheck += 1
+            winCounter += 1
         }
     }
     console.log("\t Mines placed:", minesCountCheck)
@@ -85,6 +87,7 @@ fun main() {
                     if ((0 until fieldSize).contains(k) && (0 until fieldSize).contains(l)) {
                         fieldConnected[x][y] = 2
                         if (fieldBack[k][l] == 0 && fieldConnected[k][l] == 0) { fieldConnected[k][l] = 1 }
+                        if (fieldVisibility[k][l] == 0) { winCounter += 1 }
                         fieldVisibility[k][l] = 1
                         mapFront(k, l)
                     }
@@ -114,7 +117,7 @@ fun main() {
                 if (stillPlaying) {
                     onClick {
                         checkingMode = true
-                        console.log(checkingMode)
+                        console.log("Checking mode:", checkingMode)
                     }//onClick-end
                 }
             } ){
@@ -126,7 +129,7 @@ fun main() {
                 if (stillPlaying) {
                     onClick {
                         checkingMode = false
-                        console.log(checkingMode)
+                        console.log("Checking mode:", checkingMode)
                     }//onClick-end
                 }
             } ){
@@ -134,6 +137,13 @@ fun main() {
             }//Button-end
 
             Span ({style { fontSize((boxSize * 0.5).px) }}){ Text(if (checkingMode) { " Revealing " }else { " Marking " }.toString()) }
+
+            console.log("\t Win counter:", winCounter)
+            if (winCounter >= (fieldSize * fieldSize)) {
+                stillPlaying = false
+                Span ({style { fontSize((boxSize * 0.5).px) }}){ Text("  ✅ You Won! ✅  ") }
+                console.log("\t All", winCounter, "fields are now known. You Won!")
+            }
 
             Table({
                 style {
@@ -151,8 +161,9 @@ fun main() {
                                 style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet); padding(0.px) }
                                 if (stillPlaying && fieldVisibility[i][j] == 0) {
                                     onClick {
-                                        console.log("Clicked:", i, j, "\t\t Found:", fieldBack[i][j])
+                                        console.log("Clicked:", i, j, /*"\t\t Found:", fieldBack[i][j],*/ "\t\t Win counter:", winCounter)
                                         if (checkingMode) {
+                                            console.log("\t Found:", fieldBack[i][j])
                                             if (fieldMarked[i][j]) {
                                                 console.log("Field $i $j is marked")
                                             } else if (fieldBack[i][j] == 9) {
@@ -164,16 +175,19 @@ fun main() {
                                             } else {
                                                 fieldVisibility[i][j] = 1
                                                 mapFront(i, j)
+                                                winCounter += 1
                                             }
                                         } else {
-                                            console.log(i, j, "was marked", fieldMarked[i][j])
+                                            //console.log(i, j, "was marked", fieldMarked[i][j])
                                             fieldMarked[i][j] = !fieldMarked[i][j]
                                             if (fieldMarked[i][j]) {
                                                 fieldFront[i][j] = "🚩"
+                                                console.log(i, j, "is now marked")
                                             } else {
                                                 fieldFront[i][j] = "?"
+                                                console.log(i, j, "is no longer marked")
                                             }
-                                            console.log(i, j, "is marked", fieldMarked[i][j])
+                                            //console.log(i, j, "is marked", fieldMarked[i][j])
                                         }
                                     }//onClick-end
                                 }
