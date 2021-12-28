@@ -7,8 +7,8 @@ import org.jetbrains.compose.web.renderComposable
 import kotlin.random.Random
 
 fun main() {
-    val fieldSize = 20
-    val minesCount = 46
+    val fieldSize = 16
+    val minesCount = 32
     var minesCountCheck = 0//control variable
     var checkingMode by mutableStateOf(true)
     var stillPlaying by mutableStateOf(true)
