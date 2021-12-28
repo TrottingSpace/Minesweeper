@@ -14,13 +14,13 @@ fun main() {
     var stillPlaying by mutableStateOf(true)
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
-    val fieldHidden: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { true }.toTypedArray()) }.toTypedArray())
+    val fieldVisibility: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
     val fieldFront: MutableList<MutableList<String>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { "?" }.toTypedArray()) }.toTypedArray())
     val fieldMarked: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { false }.toTypedArray()) }.toTypedArray())
     val fieldConnected: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
 
     //mine placing
-    console.log("@ placing mines")
+    console.log("\t Placing mines")
     var whileCounter = minesCount
     while (whileCounter > 0) {
         val randRow = Random.nextInt(fieldSize)
@@ -31,10 +31,10 @@ fun main() {
             minesCountCheck += 1
         }
     }
-    console.log("@ mines placed", minesCountCheck)
+    console.log("\t Mines placed:", minesCountCheck)
 
     //mine counters
-    console.log("@ counting mines")
+    console.log("\t Counting mines")
     for (i in 0 until fieldSize) {
         for (j in 0 until fieldSize) {
             if (fieldBack[i][j] != 9) {
@@ -50,39 +50,28 @@ fun main() {
             }
         }
     }
-    console.log("@ mines counted")
+    console.log("\t Mines counted")
 
-    //mapping background values to front visuals TODO fix
-    fun mapFront() {
-        if (stillPlaying) {
-            for (i in 0 until fieldSize) {
-                for (j in 0 until fieldSize) {
-                    if (fieldMarked[i][j]) {
-                        fieldFront[i][j] = "🚩"
-                    } else if (fieldHidden[i][j]) {
-                        fieldFront[i][j] = "?"
-                    } else if (fieldBack[i][j] == 0) {
-                        fieldFront[i][j] = " "
-                    } else {
-                        fieldFront[i][j] = fieldBack[i][j].toString()
-                    }
-                }
-            }
+    //mapping background values to front visuals
+    fun mapFront(x: Int, y: Int) {
+        if (fieldBack[x][y] == 0) {
+            fieldFront[x][y] = " "
+        } else if (fieldBack[x][y] == 9) {
+            fieldFront[x][y] = "💣"
+            if (fieldMarked[x][y]) { fieldFront[x][y] = "🚩" }
+        } else {
+            fieldFront[x][y] = fieldBack[x][y].toString()
         }
     }
 
     //revealing everything - function
-    fun fieldReveal(x: Int, y: Int) {
+    fun fieldRevealEverything(x: Int, y: Int) {
         for (i in 0 until fieldSize) {
             for (j in 0 until fieldSize) {
-                if (fieldBack[i][j] == 0) {
-                    fieldFront[i][j] = " "
-                } else if (fieldBack[i][j] == 9) {
-                    fieldFront[i][j] = "💣"
-                    if (fieldMarked[i][j]) { fieldFront[i][j] = "🚩" }
-                    if (x == i && y == j) { fieldFront[i][j] = "💥" }
+                if (x == i && y == j) {
+                    fieldFront[i][j] = "💥"
                 } else {
-                    fieldFront[i][j] = fieldBack[i][j].toString()
+                    mapFront(i, j)
                 }
             }
         }
@@ -96,8 +85,8 @@ fun main() {
                     if ((0 until fieldSize).contains(k) && (0 until fieldSize).contains(l)) {
                         fieldConnected[x][y] = 2
                         if (fieldBack[k][l] == 0 && fieldConnected[k][l] == 0) { fieldConnected[k][l] = 1 }
-                        fieldHidden[k][l] = false
-                        fieldFront[k][l] = fieldBack[k][l].toString()//TODO temporary
+                        fieldVisibility[k][l] = 1
+                        mapFront(k, l)
                     }
                 }
             }
@@ -110,12 +99,15 @@ fun main() {
     }
 
     //calculating dimensions
-    val boxSize: Int = if (window.innerHeight < window.innerWidth){ (window.innerHeight / (fieldSize + 1)) } else { (window.innerWidth / (fieldSize + 1)) }
-    console.log(window.innerHeight, window.innerWidth, boxSize)
+    val boxSize: Int = if (window.innerHeight < window.innerWidth){ (window.innerHeight / (fieldSize + 1)) } else { (window.innerWidth / (fieldSize + 2)) }
+    console.log("Window height:", window.innerHeight, "Window width:", window.innerWidth, "Calculated value:", boxSize)
+
+    console.log("Field size:", fieldSize, "Fields total:", (fieldSize * fieldSize), "Mines requested:", minesCount, "Mines generated:", minesCountCheck)
 
     renderComposable(rootElementId = "root") {
-        Text("$fieldSize $minesCount $checkingMode $minesCountCheck")
-        Div({ style { padding((boxSize / 4).px) } }) {
+        //Text("$fieldSize $minesCount $checkingMode $minesCountCheck")
+
+        Div({ style { padding(1.px) } }) {
             Button( attrs = {
                 style { fontSize((boxSize * 0.5).px); width((boxSize * 2).px); height(boxSize.px); textAlign("center"); property("vertical-align", "center") }
                 if (checkingMode) { disabled() }
@@ -140,7 +132,9 @@ fun main() {
             } ){
                 Text("Mark")
             }//Button-end
+
             Span ({style { fontSize((boxSize * 0.5).px) }}){ Text(if (checkingMode) { " Revealing " }else { " Marking " }.toString()) }
+
             Table({
                 style {
                     fontSize((boxSize * 0.35).px)
@@ -151,41 +145,45 @@ fun main() {
                 }
             }) {
                 for (i in 0 until fieldSize) {
-                    Tr ({ style { height(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet) } }){
+                    Tr ({ style { height(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet); padding(0.px) } }){
                         for (j in 0 until fieldSize) {
                             Td ({
-                                style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet) }
-                                if (stillPlaying && fieldHidden[i][j]) {
+                                style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.blueviolet); padding(0.px) }
+                                if (stillPlaying && fieldVisibility[i][j] == 0) {
                                     onClick {
-                                        console.log("click", i, j)
-                                        console.log("\t found", fieldBack[i][j])
+                                        console.log("Clicked:", i, j, "\t\t Found:", fieldBack[i][j])
                                         if (checkingMode) {
                                             if (fieldMarked[i][j]) {
-                                                console.log("field $i $j is marked")
+                                                console.log("Field $i $j is marked")
                                             } else if (fieldBack[i][j] == 9) {
-                                                fieldReveal(i, j)
+                                                console.log("BOOM!")
                                                 stillPlaying = false
+                                                fieldRevealEverything(i, j)
                                             } else if (fieldBack[i][j] == 0) {
                                                 connectedReveal(i, j)
+                                            } else {
+                                                fieldVisibility[i][j] = 1
+                                                mapFront(i, j)
                                             }
-                                        } else if (fieldHidden[i][j]) {
+                                        } else {
                                             console.log(i, j, "was marked", fieldMarked[i][j])
                                             fieldMarked[i][j] = !fieldMarked[i][j]
+                                            if (fieldMarked[i][j]) {
+                                                fieldFront[i][j] = "🚩"
+                                            } else {
+                                                fieldFront[i][j] = "?"
+                                            }
                                             console.log(i, j, "is marked", fieldMarked[i][j])
                                         }
                                     }//onClick-end
                                 }
                             }){
-                                //mapFront()//TODO broken function
-                                if (fieldFront[i][j] == "0") { fieldFront[i][j] = " " }//TODO temporary
                                 Text(fieldFront[i][j])
                             }//Td-end
                         }
                     }//Tr-end
                 }
             }//Table-end
-            Text("Boom")
         }//Div-end
-        Span ({style { fontSize((boxSize * 0.5).px) }}){ Text("Welcome") }
     }
 }
