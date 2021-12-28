@@ -163,7 +163,7 @@ fun main() {
                                     onClick {
                                         console.log("Clicked:", i, j, /*"\t\t Found:", fieldBack[i][j],*/ "\t\t Win counter:", winCounter)
                                         if (checkingMode) {
-                                            console.log("\t Found:", fieldBack[i][j])
+                                            //console.log("\t Found:", fieldBack[i][j])
                                             if (fieldMarked[i][j]) {
                                                 console.log("Field $i $j is marked")
                                             } else if (fieldBack[i][j] == 9) {
