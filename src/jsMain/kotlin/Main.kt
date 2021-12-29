@@ -51,12 +51,12 @@ fun main() {
     console.log("\t Placing mines")
     for (i in 0 until minesCount) {
         val chosenField = Random.nextInt(fieldsList.size)
-        console.log("Available fields", chosenField)
+        //console.log("Available fields", chosenField)
         fieldBack[fieldsList[chosenField][0]][fieldsList[chosenField][1]] = 9
         minesCountCheck += 1
         winCounter += 1
         fieldsList.removeAt(chosenField)
-        console.log("\t Fields left", fieldsList.size)
+        //console.log("\t Fields left", fieldsList.size)
     }
     console.log("\t Mines placed:", minesCountCheck)
 
