@@ -7,18 +7,30 @@ import org.jetbrains.compose.web.renderComposable
 import kotlin.random.Random
 
 fun main() {
-    val fieldSize = 16
-    val minesCount = 32
+    val fieldSize by mutableStateOf(16)
+    val minesCount by mutableStateOf(32)
     var minesCountCheck = 0//control variable
     var checkingMode by mutableStateOf(true)
     var stillPlaying by mutableStateOf(true)
     var winCounter by mutableStateOf(0)
+    var rebuildConfirm by mutableStateOf(false)
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
     val fieldVisibility: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
     val fieldFront: MutableList<MutableList<String>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { "❔" }.toTypedArray()) }.toTypedArray())
     val fieldMarked: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { false }.toTypedArray()) }.toTypedArray())
     val fieldConnected: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
+
+    /*
+    val fieldsList: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until (fieldSize * fieldSize)).map { mutableStateListOf(*(0..1).map { 0 }.toTypedArray()) }.toTypedArray())
+    for (i in 0 until fieldSize) {
+        for (j in 0 until fieldSize) {
+            fieldsList[(i * fieldSize) + j][0] = i
+            fieldsList[(i * fieldSize) + j][1] = j
+            console.log("Position:", ((i * fieldSize) + j), "")
+        }
+    }
+    */
 
     //mine placing
     console.log("\t Placing mines")
@@ -103,7 +115,8 @@ fun main() {
 
     //calculating dimensions
     val boxSize: Int = if (window.innerHeight < window.innerWidth){ (window.innerHeight / (fieldSize + 1)) } else { (window.innerWidth / (fieldSize + 2)) }
-    console.log("Window height:", window.innerHeight, "Window width:", window.innerWidth, "Calculated value:", boxSize)
+    console.log("Window height:", window.innerHeight, "Window width:", window.innerWidth, "Calculated size factor:", boxSize)
+    var boxSizeMultiplier by mutableStateOf(1.0)
 
     console.log("Field size:", fieldSize, "Fields total:", (fieldSize * fieldSize), "Mines requested:", minesCount, "Mines generated:", minesCountCheck)
 
@@ -115,107 +128,127 @@ fun main() {
             console.log("\t Win counter:", winCounter)
             if (winCounter >= (fieldSize * fieldSize)) {
                 stillPlaying = false
-                Span ({style { fontSize((boxSize * 0.5).px) }}){ Text("  ✅ You Won! ✅  ") }
+                Span ({style { fontSize(((boxSize * boxSizeMultiplier) * 0.5).px) }}){ Text("  ✅ You Won! ✅  ") }
                 console.log("\t All", winCounter, "fields are now known. You Won!")
             }
 
             Table({
                 style {
-                    fontSize((boxSize * 0.45).px)
+                    fontSize(((boxSize * boxSizeMultiplier) * 0.45).px)
                     border(1.px, LineStyle.Solid, Color.black)
                     textAlign("center")
                     property("vertical-align", "center")
                     property("table-layout", "fixed")
                     property("border-spacing", "0px")
-                    width(((fieldSize * boxSize) + 2).px)
-                    height((boxSize + 2).px)
+                    width(((fieldSize * (boxSize * boxSizeMultiplier)) + 2).px)
+                    height(((boxSize * boxSizeMultiplier) + 2).px)
                     margin(0.px)
                     padding(0.px)
                 }
             }) {
-                Tr({ style { height(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
-                    Td({ style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                Tr({ style { height((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                    Td({ style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
                         Text(if (checkingMode) { "🔍" }else { "🚩" }.toString())
                     }//Td-end
                     Td({
-                        style { width((boxSize * 2.5).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px); textDecoration(if (checkingMode) { "underline" }else { "none" }.toString()) }
+                        style { width(((boxSize * boxSizeMultiplier) * 2.5).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px); textDecoration(if (checkingMode) { "underline" }else { "none" }.toString()) }
                         if (stillPlaying && !checkingMode) {
                             onClick {
                                 checkingMode = true
                                 console.log("Checking mode:", checkingMode)
+                                rebuildConfirm = false
                             }//onClick-end
                         }
                     }) {
                         Text("Reveal 🔍")
                     }//Td-end
                     Td({
-                        style { width((boxSize * 2.5).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px); textDecoration(if (checkingMode) { "none" }else { "underline" }.toString()) }
+                        style { width(((boxSize * boxSizeMultiplier) * 2.5).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px); textDecoration(if (checkingMode) { "none" }else { "underline" }.toString()) }
                         if (stillPlaying && checkingMode) {
                             onClick {
                                 checkingMode = false
                                 console.log("Checking mode:", checkingMode)
+                                rebuildConfirm = false
                             }//onClick-end
                         }
                     }) {
                         Text("Mark 🚩")
                     }//Td-end
-                    Td({ style { /*width(boxSize.px); */margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                    Td({ style { /*width((boxSize * boxSizeMultiplier).px); */margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
                         Text("*")
                     }//Td-end
                     /*
                     Td({
-                        style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
-                        if (stillPlaying && checkingMode) {
-                            onClick {
-                                //
-                            }//onClick-end
-                        }
+                        style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                        onClick {
+                            console.log("Button 'Rebuild' clicked. \t\t Verifying...")
+                            if (rebuildConfirm) {
+                                console.log("Rebuilding")
+                                rebuildConfirm = false
+                            } else {
+                                rebuildConfirm = true
+                                console.log("rebuildConfirm =", rebuildConfirm)
+                            }
+                        }//onClick-end
+                    }) {
+                        Text("?")
+                    }//Td-end
+                    Td({ style { *//*width((boxSize * boxSizeMultiplier).px); *//*margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                        Text("*")
+                    }//Td-end
+                    */
+                    Td({
+                        style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                        onClick {
+                            boxSizeMultiplier -= 0.1
+                            console.log("Base size factor:", boxSize, "Multiplier:", boxSizeMultiplier, "Current size factor:", (boxSize * boxSizeMultiplier))
+                            rebuildConfirm = false
+                        }//onClick-end
                     }) {
                         Text("➖")
                     }//Td-end
                     Td({
-                        style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
-                        if (stillPlaying && checkingMode) {
-                            onClick {
-                                //
-                            }//onClick-end
-                        }
+                        style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                        onClick {
+                            boxSizeMultiplier = 1.0
+                            console.log("Base size factor:", boxSize, "Multiplier:", boxSizeMultiplier, "Current size factor:", (boxSize * boxSizeMultiplier))
+                            rebuildConfirm = false
+                        }//onClick-end
                     }) {
                         Text("0️⃣")
                     }//Td-end
                     Td({
-                        style { width(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
-                        if (stillPlaying && checkingMode) {
-                            onClick {
-                                //
-                            }//onClick-end
-                        }
+                        style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                        onClick {
+                            boxSizeMultiplier += 0.1
+                            console.log("Base size factor:", boxSize, "Multiplier:", boxSizeMultiplier, "Current size factor:", (boxSize * boxSizeMultiplier))
+                            rebuildConfirm = false
+                        }//onClick-end
                     }) {
                         Text("➕")
                     }//Td-end
-                    */
                 }
             }
 
             Table({
                 style {
-                    fontSize((boxSize * 0.45).px)
+                    fontSize(((boxSize * boxSizeMultiplier) * 0.45).px)
                     border(1.px, LineStyle.Solid, Color.black)
                     textAlign("center")
                     property("vertical-align", "center")
                     property("table-layout", "fixed")
                     property("border-spacing", "0px")
-                    width(((fieldSize * boxSize) + 2).px)
-                    height(((fieldSize * boxSize) + 2).px)
+                    width(((fieldSize * (boxSize * boxSizeMultiplier)) + 2).px)
+                    height(((fieldSize * (boxSize * boxSizeMultiplier)) + 2).px)
                     margin(0.px)
                     padding(0.px)
                 }
             }) {
                 for (i in 0 until fieldSize) {
-                    Tr ({ style { height(boxSize.px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }){
+                    Tr ({ style { height((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }){
                         for (j in 0 until fieldSize) {
                             Td ({
-                                style { /*width(boxSize.px); */margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                                style { /*width((boxSize * boxSizeMultiplier).px); */margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
                                 if (stillPlaying && fieldVisibility[i][j] == 0) {
                                     onClick {
                                         console.log("Clicked:", i, j, /*"\t\t Found:", fieldBack[i][j],*/ "\t\t Win counter:", winCounter)
@@ -246,6 +279,7 @@ fun main() {
                                             }
                                             //console.log(i, j, "is marked", fieldMarked[i][j])
                                         }
+                                        rebuildConfirm = false
                                     }//onClick-end
                                 }
                             }){
