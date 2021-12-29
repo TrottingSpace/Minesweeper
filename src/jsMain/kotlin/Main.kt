@@ -21,18 +21,17 @@ fun main() {
     val fieldMarked: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { false }.toTypedArray()) }.toTypedArray())
     val fieldConnected: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
 
-    /*
     val fieldsList: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until (fieldSize * fieldSize)).map { mutableStateListOf(*(0..1).map { 0 }.toTypedArray()) }.toTypedArray())
     for (i in 0 until fieldSize) {
         for (j in 0 until fieldSize) {
             fieldsList[(i * fieldSize) + j][0] = i
             fieldsList[(i * fieldSize) + j][1] = j
-            console.log("Position:", ((i * fieldSize) + j), "")
+            //console.log("Position:", ((i * fieldSize) + j), "\t\t Field:", fieldsList[(i * fieldSize) + j][0], fieldsList[(i * fieldSize) + j][1])
         }
     }
-    */
 
-    //mine placing
+    /*
+    //mine placing for small amounts of mines! - to many mines can lead to infinite loop!
     console.log("\t Placing mines")
     var whileCounter = minesCount
     while (whileCounter > 0) {
@@ -44,6 +43,20 @@ fun main() {
             minesCountCheck += 1
             winCounter += 1
         }
+    }
+    console.log("\t Mines placed:", minesCountCheck)
+    */
+
+    //mine placing v2
+    console.log("\t Placing mines")
+    for (i in 0 until minesCount) {
+        val chosenField = Random.nextInt(fieldsList.size)
+        console.log("Available fields", chosenField)
+        fieldBack[fieldsList[chosenField][0]][fieldsList[chosenField][1]] = 9
+        minesCountCheck += 1
+        winCounter += 1
+        fieldsList.removeAt(chosenField)
+        console.log("\t Fields left", fieldsList.size)
     }
     console.log("\t Mines placed:", minesCountCheck)
 
