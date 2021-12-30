@@ -25,7 +25,7 @@ fun main() {
     var rebuildConfirm by mutableStateOf(false)
 
     var newFieldSize = fieldSize
-    var newMinesCount by mutableStateOf(minesCount)
+    var newMinesCount = minesCount
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
     val fieldVisibility: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
@@ -204,11 +204,12 @@ fun main() {
                         Input(InputType.Number) {
                             style { width(((boxSize * boxSizeMultiplier) - 4).px); height(((boxSize * boxSizeMultiplier) - 4).px); border(1.px, LineStyle.Solid, Color.darkgreen); outline("none"); fontSize(((boxSize * boxSizeMultiplier) * 0.35).px); margin(0.px); padding(0.px) }
                             min("2")
-                            max("100")
+                            max("32")
                             defaultValue(fieldSize)
                             onChange {
                                 newFieldSize = it.value as Int
                                 console.log("newFieldSize", newFieldSize)
+                                if (newFieldSize > 32) { window.alert(" Warning!\n New field size is over 32, that's over 1024 individual fields!\n Game may load for a VERY LONG time! ") }
                                 rebuildConfirm = false
                             }
                         }
@@ -222,7 +223,7 @@ fun main() {
                         Input(InputType.Number) {
                             style { width(((boxSize * boxSizeMultiplier) - 4).px); height(((boxSize * boxSizeMultiplier) - 4).px); border(1.px, LineStyle.Solid, Color.darkred); outline("none"); fontSize(((boxSize * boxSizeMultiplier) * 0.35).px); margin(0.px); padding(0.px) }
                             min("1")
-                            max(((newFieldSize * newFieldSize)-1).toString())
+                            //max(((newFieldSize * newFieldSize)-1).toString())
                             defaultValue(minesCount)
                             onChange {
                                 newMinesCount = it.value as Int
@@ -237,14 +238,15 @@ fun main() {
                             console.log("Button 'Rebuild' clicked...")
                             if (rebuildConfirm) {
                                 if ((1 until (newFieldSize * newFieldSize)).contains(newMinesCount)) {
+                                    if (newFieldSize < 2) { newFieldSize = 2 }
                                     fieldSize = newFieldSize
                                     minesCount = newMinesCount
                                     console.log("\t Rebuilding")
                                     document.getElementById("root")?.innerHTML = ""
                                     main()
                                 } else {
-                                    console.log("Incorrect numbers requested.")
-                                    window.alert(" New field size:\t $newFieldSize \n Fields in total:\t " + (newFieldSize * newFieldSize) + " \n $newMinesCount mines is not allowed for " + (newFieldSize * newFieldSize) + " fields! ")
+                                    console.log("\t Incorrect numbers requested.")
+                                    window.alert(" New field size:  $newFieldSize \n Fields in total:  " + (newFieldSize * newFieldSize) + " \n $newMinesCount mines is not allowed for " + (newFieldSize * newFieldSize) + " fields! ")
                                 }
                                 rebuildConfirm = false
                             } else {
