@@ -1,19 +1,31 @@
-import androidx.compose.runtime.*
-import kotlinx.browser.window
 //import org.jetbrains.compose.web.attributes.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.browser.document
+import kotlinx.browser.window
+import org.jetbrains.compose.web.attributes.InputType
+import org.jetbrains.compose.web.attributes.max
+import org.jetbrains.compose.web.attributes.min
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.jetbrains.compose.web.renderComposable
 import kotlin.random.Random
 
+var fieldSize = 16
+var minesCount = 32
+
 fun main() {
-    val fieldSize by mutableStateOf(16)
-    val minesCount by mutableStateOf(32)
+    console.log("%c Welcome in Minesweeper! ", "color: white; font-weight: bold; background-color: black;")
     var minesCountCheck = 0//control variable
     var checkingMode by mutableStateOf(true)
     var stillPlaying by mutableStateOf(true)
     var winCounter by mutableStateOf(0)
     var rebuildConfirm by mutableStateOf(false)
+
+    var newFieldSize = fieldSize
+    var newMinesCount by mutableStateOf(minesCount)
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
     val fieldVisibility: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
@@ -48,20 +60,15 @@ fun main() {
     */
 
     //mine placing v2
-    console.log("\t Placing mines")
     for (i in 0 until minesCount) {
         val chosenField = Random.nextInt(fieldsList.size)
-        //console.log("Available fields", chosenField)
         fieldBack[fieldsList[chosenField][0]][fieldsList[chosenField][1]] = 9
         minesCountCheck += 1
         winCounter += 1
         fieldsList.removeAt(chosenField)
-        //console.log("\t Fields left", fieldsList.size)
     }
-    console.log("\t Mines placed:", minesCountCheck)
 
     //mine counters
-    console.log("\t Counting mines")
     for (i in 0 until fieldSize) {
         for (j in 0 until fieldSize) {
             if (fieldBack[i][j] != 9) {
@@ -77,7 +84,6 @@ fun main() {
             }
         }
     }
-    console.log("\t Mines counted")
 
     //mapping background values to front visuals
     fun mapFront(x: Int, y: Int) {
@@ -128,17 +134,16 @@ fun main() {
 
     //calculating dimensions
     val boxSize: Int = if (window.innerHeight < window.innerWidth){ (window.innerHeight / (fieldSize + 1)) } else { (window.innerWidth / (fieldSize + 2)) }
-    console.log("Window height:", window.innerHeight, "Window width:", window.innerWidth, "Calculated size factor:", boxSize)
+    console.log(" Window height:\t", window.innerHeight, "\n Window width:\t", window.innerWidth, "\n Size factor: \t", boxSize)
     var boxSizeMultiplier by mutableStateOf(1.0)
 
-    console.log("Field size:", fieldSize, "Fields total:", (fieldSize * fieldSize), "Mines requested:", minesCount, "Mines generated:", minesCountCheck)
+    console.log(" Minefield size:\t", fieldSize, "\n Fields in total:\t", (fieldSize * fieldSize), "\n Mines generated:\t", minesCountCheck, "/", minesCount)
 
     renderComposable(rootElementId = "root") {
-        //Text("$fieldSize $minesCount $checkingMode $minesCountCheck")
 
         Div({ style { padding(1.px) } }) {
 
-            console.log("\t Win counter:", winCounter)
+            console.log("\t Win counter:\t", winCounter, "/", (fieldSize * fieldSize))
             if (winCounter >= (fieldSize * fieldSize)) {
                 stillPlaying = false
                 Span ({style { fontSize(((boxSize * boxSizeMultiplier) * 0.5).px) }}){ Text("  ✅ You Won! ✅  ") }
@@ -187,29 +192,72 @@ fun main() {
                     }) {
                         Text("Mark 🚩")
                     }//Td-end
-                    Td({ style { /*width((boxSize * boxSizeMultiplier).px); */margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                    Td({ style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
                         Text("*")
                     }//Td-end
-                    /*
+                    Td({ style { fontSize(((boxSize * boxSizeMultiplier) * 0.2).px); width(((boxSize * boxSizeMultiplier) / 2).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                        Text("🔲")
+                    }//Td-end
                     Td({
                         style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                    }) {
+                        Input(InputType.Number) {
+                            style { width(((boxSize * boxSizeMultiplier) - 4).px); height(((boxSize * boxSizeMultiplier) - 4).px); border(1.px, LineStyle.Solid, Color.darkgreen); outline("none"); fontSize(((boxSize * boxSizeMultiplier) * 0.35).px); margin(0.px); padding(0.px) }
+                            min("2")
+                            max("100")
+                            defaultValue(fieldSize)
+                            onChange {
+                                newFieldSize = it.value as Int
+                                console.log("newFieldSize", newFieldSize)
+                                rebuildConfirm = false
+                            }
+                        }
+                    }//Td-end
+                    Td({ style { fontSize(((boxSize * boxSizeMultiplier) * 0.2).px); width(((boxSize * boxSizeMultiplier) / 2).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                        Text("💣")
+                    }//Td-end
+                    Td({
+                        style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
+                    }) {
+                        Input(InputType.Number) {
+                            style { width(((boxSize * boxSizeMultiplier) - 4).px); height(((boxSize * boxSizeMultiplier) - 4).px); border(1.px, LineStyle.Solid, Color.darkred); outline("none"); fontSize(((boxSize * boxSizeMultiplier) * 0.35).px); margin(0.px); padding(0.px) }
+                            min("1")
+                            max(((newFieldSize * newFieldSize)-1).toString())
+                            defaultValue(minesCount)
+                            onChange {
+                                newMinesCount = it.value as Int
+                                console.log("newMinesCount", newMinesCount)
+                                rebuildConfirm = false
+                            }
+                        }
+                    }//Td-end
+                    Td({
+                        style { width(((boxSize * boxSizeMultiplier) * 2).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
                         onClick {
-                            console.log("Button 'Rebuild' clicked. \t\t Verifying...")
+                            console.log("Button 'Rebuild' clicked...")
                             if (rebuildConfirm) {
-                                console.log("Rebuilding")
+                                if ((1 until (newFieldSize * newFieldSize)).contains(newMinesCount)) {
+                                    fieldSize = newFieldSize
+                                    minesCount = newMinesCount
+                                    console.log("\t Rebuilding")
+                                    document.getElementById("root")?.innerHTML = ""
+                                    main()
+                                } else {
+                                    console.log("Incorrect numbers requested.")
+                                    window.alert(" New field size:\t $newFieldSize \n Fields in total:\t " + (newFieldSize * newFieldSize) + " \n $newMinesCount mines is not allowed for " + (newFieldSize * newFieldSize) + " fields! ")
+                                }
                                 rebuildConfirm = false
                             } else {
                                 rebuildConfirm = true
-                                console.log("rebuildConfirm =", rebuildConfirm)
+                                console.log("\t Click again to confirm.")
                             }
                         }//onClick-end
                     }) {
-                        Text("?")
+                        Text(if (rebuildConfirm) { "Confirm" }else { "Rebuild" }.toString())
                     }//Td-end
-                    Td({ style { *//*width((boxSize * boxSizeMultiplier).px); *//*margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
+                    Td({ style { width(((boxSize * boxSizeMultiplier) / 2).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) } }) {
                         Text("*")
                     }//Td-end
-                    */
                     Td({
                         style { width((boxSize * boxSizeMultiplier).px); margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
                         onClick {
