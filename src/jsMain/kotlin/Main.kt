@@ -28,7 +28,7 @@ fun main() {
     var newMinesCount = minesCount
 
     val fieldBack: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
-    val fieldVisibility: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
+    val fieldRevealed: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { false }.toTypedArray()) }.toTypedArray())
     val fieldFront: MutableList<MutableList<String>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { "❔" }.toTypedArray()) }.toTypedArray())
     val fieldMarked: MutableList<MutableList<Boolean>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { false }.toTypedArray()) }.toTypedArray())
     val fieldConnected: MutableList<MutableList<Int>> = mutableStateListOf(*(0 until fieldSize).map { mutableStateListOf(*(0 until fieldSize).map { 0 }.toTypedArray()) }.toTypedArray())
@@ -118,8 +118,8 @@ fun main() {
                     if ((0 until fieldSize).contains(k) && (0 until fieldSize).contains(l)) {
                         fieldConnected[x][y] = 2
                         if (fieldBack[k][l] == 0 && fieldConnected[k][l] == 0) { fieldConnected[k][l] = 1 }
-                        if (fieldVisibility[k][l] == 0) { winCounter += 1 }
-                        fieldVisibility[k][l] = 1
+                        if (!fieldRevealed[k][l]) { winCounter += 1 }
+                        fieldRevealed[k][l] = true
                         mapFront(k, l)
                     }
                 }
@@ -312,7 +312,7 @@ fun main() {
                         for (j in 0 until fieldSize) {
                             Td ({
                                 style { /*width((boxSize * boxSizeMultiplier).px); */margin(0.px); border(1.px, LineStyle.Solid, Color.black); padding(0.px) }
-                                if (stillPlaying && fieldVisibility[i][j] == 0) {
+                                if (stillPlaying && !fieldRevealed[i][j]) {
                                     onClick {
                                         console.log("Clicked:", i, j, /*"\t\t Found:", fieldBack[i][j],*/ "\t\t Win counter:", winCounter)
                                         if (checkingMode) {
@@ -326,7 +326,7 @@ fun main() {
                                             } else if (fieldBack[i][j] == 0) {
                                                 connectedReveal(i, j)
                                             } else {
-                                                fieldVisibility[i][j] = 1
+                                                fieldRevealed[i][j] = true
                                                 mapFront(i, j)
                                                 winCounter += 1
                                             }
