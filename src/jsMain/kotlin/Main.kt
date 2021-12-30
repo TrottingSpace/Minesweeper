@@ -208,7 +208,7 @@ fun main() {
                             defaultValue(fieldSize)
                             onChange {
                                 newFieldSize = it.value as Int
-                                console.log("newFieldSize", newFieldSize)
+                                //console.log("newFieldSize", newFieldSize)
                                 if (newFieldSize > 32) { window.alert(" Warning!\n New field size is over 32, that's over 1024 individual fields!\n Game may load for a VERY LONG time! ") }
                                 rebuildConfirm = false
                             }
@@ -227,7 +227,7 @@ fun main() {
                             defaultValue(minesCount)
                             onChange {
                                 newMinesCount = it.value as Int
-                                console.log("newMinesCount", newMinesCount)
+                                //console.log("newMinesCount", newMinesCount)
                                 rebuildConfirm = false
                             }
                         }
@@ -238,7 +238,7 @@ fun main() {
                             console.log("Button 'Rebuild' clicked...")
                             if (rebuildConfirm) {
                                 if ((1 until (newFieldSize * newFieldSize)).contains(newMinesCount)) {
-                                    if (newFieldSize < 2) { newFieldSize = 2 }
+                                    //if (newFieldSize < 2) { newFieldSize = 2 }
                                     fieldSize = newFieldSize
                                     minesCount = newMinesCount
                                     console.log("\t Rebuilding")
