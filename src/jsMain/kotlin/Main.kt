@@ -13,11 +13,41 @@ import org.jetbrains.compose.web.dom.*
 import org.jetbrains.compose.web.renderComposable
 import kotlin.random.Random
 
+var fieldWith = 16
+var fieldHeight = 8
+var fieldMines = 37
+
+class Menu {
+    var hidden by mutableStateOf(true)
+}
+
+class Field(fieldIndex: Int) {
+    var content = 0
+    var hidden = true
+        private set
+    fun color(): CSSColorValue { return if (hidden) { Color.lightgray } else { Color.gray } }
+    fun show() { hidden = false }
+}
+
+val menu = Menu()
+val fieldList: MutableList<Field> = mutableListOf()
+fun rebuildMinefield() {
+    while (fieldList.size > 0) { fieldList.removeAt(0) }
+    for (indexF in 0 until (fieldHeight * fieldWith)) { fieldList.add(Field(indexF)) }
+}
+
+
+
+
 var fieldSize = 16
 var minesCount = 32
 
 fun main() {
     console.log("%c Welcome in Minesweeper! ", "color: white; font-weight: bold; background-color: black;")
+    rebuildMinefield()
+
+    console.log("Starting with:\n Field width:\t", fieldWith, "\n Field height:\t", fieldHeight, "\n Field size:\t", fieldList.size, "\n Mines count:\t", fieldMines)
+
     var minesCountCheck = 0//control variable
     var checkingMode by mutableStateOf(true)
     var stillPlaying by mutableStateOf(true)
@@ -139,8 +169,53 @@ fun main() {
 
     console.log(" Minefield size:\t", fieldSize, "\n Fields in total:\t", (fieldSize * fieldSize), "\n Mines generated:\t", minesCountCheck, "/", minesCount)
 
-    renderComposable(rootElementId = "root") {
+    //"Minesweeper_root" div style applying
+    //document.getElementById("Minesweeper_root")?.setAttribute("style", "padding: 0px; border: none; aspect-ratio: ${fieldWith.toDouble() / (fieldHeight + 1)}; position: relative; margin: 0px auto;")
 
+    renderComposable(rootElementId = "Minesweeper_root") {
+
+        //new content
+        Div({ style { padding(5.px); position(Position.Relative) } }) {
+            //menu div
+            Div({ style { if (menu.hidden) { display(DisplayStyle.None) }; } }) {
+                //
+            }
+            //menu bar table
+            Table({ style { width(100.percent); height(100.percent); property("aspect-ratio", "$fieldWith / 1"); property("table-layout", "fixed"); border(1.px, LineStyle.Solid, Color.white) } }) {
+                Tr {
+                    Td({ style { border(1.px, LineStyle.Solid, Color.dimgray) } }) {
+                        Text("Top bar")
+                    }
+                }
+            }
+            //minefield table
+            Table({
+                style {
+                    width(100.percent)
+                    height(100.percent)
+                    property("aspect-ratio", "${fieldWith.toDouble() / fieldHeight}")
+                    property("table-layout", "fixed")
+                    property("border-spacing", "0px")
+                    textAlign("center")
+                    border(1.px, LineStyle.Solid, Color.white)
+                }
+            }) {
+                for (i in 0 until fieldHeight) {
+                    Tr {
+                        for (j in 0 until fieldWith) {
+                            val currentField = j + (i * fieldWith)
+                            Td({ style { padding(0.px); border(1.px, LineStyle.Solid, Color.black) } }) {
+                                Button({ style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white) } }) {
+                                    Text("#$currentField")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //old content
         Div({ style { padding(1.px) } }) {
 
             console.log("\t Win counter:\t", winCounter, "/", (fieldSize * fieldSize))
