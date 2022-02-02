@@ -1,4 +1,3 @@
-//import org.jetbrains.compose.web.attributes.*
 import androidx.compose.runtime.getValue
 //import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +56,7 @@ fun rebuildMinefield() {
 }
 
 fun minePlacerAndCounter() {
+    //placing mines
     val fields = (0 until (fieldHeight * fieldWidth)).map { it }.toMutableList()
     if (minesCount < fields.size) {
         var counter = 0
@@ -69,6 +69,7 @@ fun minePlacerAndCounter() {
     } else {
         console.log("Too many mines!")
     }
+    //counting mines
     (0 until (fieldHeight * fieldWidth)).forEach { field[it/fieldWidth][it%fieldWidth].mineCounter() }
 }
 
@@ -80,7 +81,7 @@ fun main() {
     rebuildMinefield()
     minePlacerAndCounter()
 
-    console.log("Starting with:\n Field width:\t", fieldWidth, "\n Field height:\t", fieldHeight, "\n Field size:\t", field.size, "\n Mines count:\t", minesCount)
+    console.log("Starting with:\n Field width:\t", fieldWidth, "\n Field height:\t", fieldHeight, "\n Field size:\t", (fieldHeight * fieldWidth), "\n Mines count:\t", minesCount)
 
 
 
@@ -102,7 +103,7 @@ fun main() {
                 Tr {
                     Td({
                         style { border(1.px, LineStyle.Solid, Color.dimgray) }
-                        onClick { revealAll() }
+                        onClick { revealAll(); window.alert("BOOM!") }
                     }) {
                         Text("Top bar   Work In Progress")
                     }
@@ -129,7 +130,7 @@ fun main() {
                                     style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(field[i][j].color()) }
                                     if (field[i][j].hidden) {
                                         onClick {
-                                            if (field[i][j].content == 9) { revealAll(); window.alert("BOOM!") } else { field[i][j].show() }
+                                            if (field[i][j].content == 9) { revealAll() } else { field[i][j].show() }
                                         }
                                     }
                                 }) {
