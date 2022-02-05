@@ -1,4 +1,5 @@
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 //import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -39,10 +40,10 @@ class Menu {
         fieldHeight = newHeight
         minesCount = newMines
         hidden = true
-        rebuildMinefield()
-        minePlacerAndCounter()
         colorHidden = Color.lightgray
         colorShown = Color.gray
+        rebuildMinefield()
+        minePlacerAndCounter()
         consoleCurrentValues()
         inGame = true
     }
@@ -106,7 +107,7 @@ class Field(private val indexF: Int) {
 }
 
 val menu = Menu()
-val field: MutableList<Field> = mutableListOf()
+val field: MutableList<Field> = mutableStateListOf()
 fun rebuildMinefield() {
     winCounter = 0
     boom = false
