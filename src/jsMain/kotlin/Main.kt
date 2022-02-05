@@ -125,6 +125,7 @@ fun main() {
 
 
 
+    val myFontSize = "xxx-large"
 
     //"Minesweeper_root" div style applying
     document.getElementById("Minesweeper_root")?.setAttribute("style", "padding: 0px; border: none; /*aspect-ratio: ${fieldWidth.toDouble() / (fieldHeight + 1)};*/ position: relative; margin: 0px auto;")
@@ -159,13 +160,14 @@ fun main() {
                     property("border-spacing", "0px")
                     border(1.px, LineStyle.Solid, Color.white)
                     textAlign("center")
+                    property("font-size", myFontSize)
                 }
             }) {
                 Tr {
                     Td({
                         style { padding(0.px); border(1.px, LineStyle.Solid, Color.black) }
                     }) {
-                        Button({ style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(if (revealing) { Color.tomato } else { Color.limegreen }) } }) {
+                        Button({ style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(if (revealing) { Color.tomato } else { Color.limegreen }); property("font-size", myFontSize) } }) {
                             Text(if (revealing) { "🔍" } else { "🚩" })
                         }
                     }
@@ -174,7 +176,7 @@ fun main() {
                         colspan(2)
                     }) {
                         Button({
-                            style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray); if (revealing) { textDecoration("underline") } }
+                            style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray); if (revealing) { textDecoration("underline") }; property("font-size", myFontSize) }
                             if (inGame && !revealing) {
                                 onClick { revealing = true }
                             }
@@ -187,7 +189,7 @@ fun main() {
                         colspan(2)
                     }) {
                         Button({
-                            style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray); if (!revealing) { textDecoration("underline") } }
+                            style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray); if (!revealing) { textDecoration("underline") }; property("font-size", myFontSize) }
                             if (inGame && revealing) {
                                 onClick { revealing = false }
                             }
@@ -199,7 +201,7 @@ fun main() {
                         style { padding(0.px); border(1.px, LineStyle.Solid, Color.black) }
                         onClick { menu.hidden = false }
                     }) {
-                        Button({ style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray) } }) {
+                        Button({ style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray); property("font-size", myFontSize) } }) {
                             Text("⚙")
                         }
                     }
@@ -209,7 +211,7 @@ fun main() {
                             colspan(fieldWidth - 6)
                         }) {
                             Button({
-                                style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray) }
+                                style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray); property("font-size", myFontSize) }
                                 onClick {
                                     //console.log(winCounter)
                                     window.alert("This \"button\" shows You this message.\n Nothing else :)")
@@ -239,7 +241,7 @@ fun main() {
                             val fNum = (i * fieldWidth) + j
                             Td({ style { padding(0.px); border(1.px, LineStyle.Solid, Color.black) } }) {
                                 Button({
-                                    style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(field[fNum].color()) }
+                                    style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(field[fNum].color()); property("font-size", myFontSize) }
                                     if (field[fNum].hidden && inGame) {
                                         onClick {
                                             if (revealing) {
