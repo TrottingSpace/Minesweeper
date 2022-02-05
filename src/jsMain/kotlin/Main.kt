@@ -14,6 +14,7 @@ var fieldWidth = 8
 var fieldHeight = 8
 var minesCount = 10
 
+var inGame by mutableStateOf(true)
 var winCounter by mutableStateOf(0)
 var revealing by mutableStateOf(true)
 var boom by mutableStateOf(false)
@@ -130,6 +131,7 @@ fun main() {
 
     renderComposable(rootElementId = "Minesweeper_root") {
         if (winCounter >= field.size) {
+            inGame = false
             if (boom) {
                 colorShown = Color.indianred
                 //window.alert(" 💥 BOOM! 💥 ")
@@ -162,7 +164,6 @@ fun main() {
                 Tr {
                     Td({
                         style { padding(0.px); border(1.px, LineStyle.Solid, Color.black) }
-                        onClick { revealAll() }
                     }) {
                         Button({ style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(if (revealing) { Color.tomato } else { Color.limegreen }) } }) {
                             Text(if (revealing) { "🔍" } else { "🚩" })
@@ -174,7 +175,7 @@ fun main() {
                     }) {
                         Button({
                             style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray); if (revealing) { textDecoration("underline") } }
-                            if (!revealing) {
+                            if (inGame && !revealing) {
                                 onClick { revealing = true }
                             }
                         }) {
@@ -187,7 +188,7 @@ fun main() {
                     }) {
                         Button({
                             style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(Color.lightgray); if (!revealing) { textDecoration("underline") } }
-                            if (revealing) {
+                            if (inGame && revealing) {
                                 onClick { revealing = false }
                             }
                         }) {
@@ -239,7 +240,7 @@ fun main() {
                             Td({ style { padding(0.px); border(1.px, LineStyle.Solid, Color.black) } }) {
                                 Button({
                                     style { width(100.percent); height(100.percent); padding(0.px); border(1.px, LineStyle.Solid, Color.white); backgroundColor(field[fNum].color()) }
-                                    if (field[fNum].hidden) {
+                                    if (field[fNum].hidden && inGame) {
                                         onClick {
                                             if (revealing) {
                                                 if (!field[fNum].flagged) {
